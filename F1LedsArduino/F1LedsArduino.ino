@@ -15,10 +15,6 @@ int power(int value, int exponent) {
 
 void initialize() {
 	display(0x00);
-	display(0xFF);
-	digitalWrite(yellowPin, HIGH);
-	delay(2000);
-	display(0x00);
 	digitalWrite(yellowPin, LOW);
 }
 
