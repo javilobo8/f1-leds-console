@@ -43,8 +43,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArduinoSerial.cs" />
-    <Compile Include="F1Data.cs" />
     <Compile Include="F1DataInterface.cs" />
+    <Compile Include="F1DataStruct.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UDPServer.cs" />

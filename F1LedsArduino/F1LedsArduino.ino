@@ -4,10 +4,8 @@ const int dataPin = 11;
 const int yellowPin = 6;
 
 byte led_data = 0x00;
-const byte only_blue = 0xE0;
-const byte only_red = 0x1F;
 
-int serial_data[] = { 0, 0 };
+int serial_data[] = { 0x00, 0x00, 0x00, 0x00 };
 
 int power(int value, int exponent) {
 	return 0.5 + pow(value, exponent);
@@ -30,13 +28,19 @@ void setup() {
 
 void loop() {
 	while (true) {
-		if (Serial.available() > 1) {
+		if (Serial.available() > 3) {
 			serial_data[0] = Serial.read();
 			serial_data[1] = Serial.read();
+			serial_data[2] = Serial.read();
+			serial_data[2] = serial_data[2] * 256 + Serial.read();
 		}
-		display(serial_data[0]);
-		digitalWrite(yellowPin, serial_data[1] ? HIGH : LOW);
+		display_data();
 	}
+}
+
+void display_data() {
+	display(serial_data[0]);
+	digitalWrite(yellowPin, serial_data[1]);
 }
 
 void display(byte data) {

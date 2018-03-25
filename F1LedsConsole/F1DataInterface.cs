@@ -19,16 +19,22 @@ namespace F1LedsConsole
             this.serial = _serial;
         }
 
-        public void Send(F1Data data)
+        public void Send(F1DataStruct.F1Data data)
         {
             now = (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds;
 
-            byte rpm_byte = CalcRPMByte(data.Get("engineRate"));
-            byte drs_byte = (byte)(int)data.Get("drs");
+            byte rpm_byte = CalcRPMByte(data.engineRate);
+            byte drs_byte = (byte)(int)data.drs;
+
+            int kmh = (int)(data.engineRate * 3.6f);
+            byte kmh_byte_0 = (byte)(kmh / 256);
+            byte kmh_byte_1 = (byte)(kmh % 256);
 
             byte[] serial_data = {
                 rpm_byte,
-                drs_byte
+                drs_byte,
+                kmh_byte_0,
+                kmh_byte_1
             };
 
             serial.Write(serial_data);

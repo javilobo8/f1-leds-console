@@ -13,7 +13,10 @@ namespace F1LedsConsole
                 throw new Exception("No COM ports");
             }
 
-            if (ports.Length == 1) return ports[0];
+            if (ports.Length == 1) {
+                Console.WriteLine("{0} selected", ports[0]);
+                return ports[0];
+            }
 
             Console.WriteLine("Select COM port:");
             for (int i = 0; i < ports.Length; i++)
