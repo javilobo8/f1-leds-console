@@ -37,7 +37,7 @@ namespace F1LedsConsole
             return ports[selected];
         }
 
-        public static int BAUD_RATE = 9600;
+        public static int BAUD_RATE = 14400;
 
         public String Port { get; set; }
         private SerialPort sp;

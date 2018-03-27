@@ -9,11 +9,10 @@ namespace F1LedsConsole
 {
     struct SerialData
     {
-        public UInt16 rpm;
-        public UInt16 drs;
-        public UInt16 gear;
-        public UInt16 kmh;
-        public UInt16 lapTime;
+        public UInt32 gear;
+        public UInt32 kmh;
+        public UInt32 rpm;
+        public UInt32 lapTime;
     }
 
     class StructUtils
@@ -21,6 +20,7 @@ namespace F1LedsConsole
         public static byte[] ToByteArray(object obj)
         {
             int len = Marshal.SizeOf(obj);
+            // Console.WriteLine(len);
             byte[] arr = new byte[len];
             IntPtr ptr = Marshal.AllocHGlobal(len);
             Marshal.StructureToPtr(obj, ptr, true);

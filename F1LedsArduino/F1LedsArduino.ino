@@ -1,5 +1,5 @@
 #include <LedControlMS.h>
-#define N_MAX 3       // Cuantas matrices vamos a usar
+#define N_MAX 3        // Cuantas matrices vamos a usar
 #define MATRIX 0
 #define DIGIT_0 1
 #define DIGIT_1 2
@@ -8,6 +8,7 @@
 #define DPIN 2
 #define CSPIN 3
 #define CLKPIN 4
+#define INTENSITY 0
 
 byte NUMBERS[] = {
 	B01111110, // 0
@@ -122,40 +123,58 @@ const byte GEARS[][8] = {
 		B00000110,
 		B00000110,
 		B00000110
-	} };
+	}
+};
 
+// unsigned int = [0...32767]
 typedef struct
 {
-	unsigned int rpm = 0;
-	unsigned int drs = 0;
-	unsigned int gear = 0;
-	unsigned int kmh = 0;
-	unsigned int lapTime = 0;
+	uint32_t gear = 0;
+	uint32_t kmh = 0;
+	uint32_t rpm = 0;
+	uint32_t lapTime = 0;
 } SerialData;
 
 SerialData data;
 
-char messageBuffer[10];
+const size_t packet_size = 16;
+char messageBuffer[packet_size];
 
 LedControl lc = LedControl(DPIN, CLKPIN, CSPIN, N_MAX);
 
 void setup() {
-	for (int i = 0; i < N_MAX; i++) {
-		lc.shutdown(i, false);
-		lc.setIntensity(i, 1);
-		lc.clearDisplay(i);
+	lc.shutdown(MATRIX, false);
+	lc.setIntensity(MATRIX, 0);
+	lc.clearDisplay(MATRIX);
+
+	lc.shutdown(DIGIT_0, false);
+	lc.setIntensity(DIGIT_0, 1);
+	lc.clearDisplay(DIGIT_0);
+
+	lc.shutdown(DIGIT_1, false);
+	lc.setIntensity(DIGIT_1, 1);
+	lc.clearDisplay(DIGIT_1);
+
+	for (int h = 1; h >= 0; h--) {
+		for (size_t i = 0; i < N_MAX; i++) {
+			for (size_t j = 0; j < 8; j++) {
+				for (size_t k = 0; k < 8; k++) {
+					lc.setLed(i, j, k, h);
+					delay(2);
+				}
+			}
+		}
 	}
-	Serial.begin(9600);
+		
+	Serial.begin(14400);
 }
 
 void loop() {
-	while (true) {
-		if (Serial.available() >= 10) {
-			Serial.readBytes(messageBuffer, 10);
-			memcpy(&data, &messageBuffer, 10);
-		}
-		display();
+	if (Serial.available() >= packet_size) {
+		Serial.readBytes(messageBuffer, packet_size);
+		memcpy(&data, &messageBuffer, packet_size);
 	}
+	display();
 }
 
 int power(int value, int exponent) {
@@ -166,12 +185,12 @@ int count_digits(int arg) {
 	return snprintf(NULL, 0, "%d", arg) - (arg < 0);
 }
 
-void printNumber(int disp, int offset, int max_digits, int num) {
-	int number = num;
-	int arr[max_digits];
-	int arr_size = NELEMS(arr);
+void printNumber(uint8_t disp, uint8_t offset, uint8_t max_digits, uint32_t number) {
+	uint8_t digits = count_digits(number);
+	uint8_t arr[max_digits];
+	uint8_t arr_size = NELEMS(arr);
 
-	for (int i = 0; i < arr_size; i++) {
+	for (size_t i = 0; i < arr_size; i++) {
 		if (number == 0) {
 			arr[i] = 0;
 		}
@@ -180,19 +199,25 @@ void printNumber(int disp, int offset, int max_digits, int num) {
 			number = number / 10;
 		}
 	}
-	for (int j = 0; j < arr_size; j++) {
-		lc.setRow(disp, j + offset, NUMBERS[arr[j]]);
+	for (size_t j = 0; j < arr_size; j++) {
+		byte b = NUMBERS[arr[j]];
+		// if (j == 1)
+		//	 b += B10000000;
+		if (arr[j] == 0 && j + 1 > digits)
+			lc.setRow(disp, j + offset, B00000000);
+		else
+			lc.setRow(disp, j + offset, b);
 	}
 }
 
 void printGear(int gear) {
-	for (int row = 0; row < 8; row++) {
+	for (size_t row = 0; row < 8; row++) {
 		lc.setRow(MATRIX, row, GEARS[gear][row]);
 	}
 }
 
 void display() {
 	printGear(data.gear);
-	printNumber(1, 0, 3, (int)data.kmh);
-	// printNumber(2, 0, 6, (int)data.lapTime);
+	printNumber(DIGIT_0, 0, 3, data.kmh);
+	printNumber(DIGIT_1, 0, 5, data.lapTime);
 }

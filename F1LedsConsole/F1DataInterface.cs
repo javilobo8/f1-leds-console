@@ -24,19 +24,26 @@ namespace F1LedsConsole
         {
             now = (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds;
 
-            UInt16 rpm = (UInt16)CalcRPMByte(data.engineRate);
-            UInt16 drs = (UInt16)data.drs;
-            UInt16 gear = (UInt16)data.gear;
-            UInt16 lapTime = (UInt16)data.lapTime;
-            UInt16 kmh = (UInt16)(data.speed * 3.6f);
+            // UInt32 rpm = (UInt32)CalcRPMByte(data.engineRate);
+            // UInt32 drs = (UInt32)data.drs;
+            UInt32 gear = (UInt32)data.gear;
+            UInt32 kmh = (UInt32)(data.speed * 3.6f);
+            UInt32 rpm = (UInt32)data.engineRate;
+            UInt32 lapTime = (UInt32)(data.lapTime * 10f);
 
-            serial.Write(StructUtils.ToByteArray(new SerialData {
-                rpm = rpm,
-                drs = drs,
+            SerialData sd = new SerialData
+            {
                 gear = gear,
                 kmh = kmh,
+                rpm = rpm,
                 lapTime = lapTime
-            }));
+            };
+
+            // Console.WriteLine(sd.gear);
+            // Console.WriteLine(sd.kmh);
+            // Console.WriteLine(sd.lapTime);
+
+            serial.Write(StructUtils.ToByteArray(sd));
         }
 
 
