@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 
 namespace F1LedsConsole
 {
@@ -23,22 +24,22 @@ namespace F1LedsConsole
         {
             now = (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds;
 
-            byte rpm_byte = CalcRPMByte(data.engineRate);
-            byte drs_byte = (byte)(int)data.drs;
+            UInt16 rpm = (UInt16)CalcRPMByte(data.engineRate);
+            UInt16 drs = (UInt16)data.drs;
+            UInt16 gear = (UInt16)data.gear;
+            UInt16 lapTime = (UInt16)data.lapTime;
+            UInt16 kmh = (UInt16)(data.speed * 3.6f);
 
-            int kmh = (int)(data.engineRate * 3.6f);
-            byte kmh_byte_0 = (byte)(kmh / 256);
-            byte kmh_byte_1 = (byte)(kmh % 256);
-
-            byte[] serial_data = {
-                rpm_byte,
-                drs_byte,
-                kmh_byte_0,
-                kmh_byte_1
-            };
-
-            serial.Write(serial_data);
+            serial.Write(StructUtils.ToByteArray(new SerialData {
+                rpm = rpm,
+                drs = drs,
+                gear = gear,
+                kmh = kmh,
+                lapTime = lapTime
+            }));
         }
+
+
 
         public byte CalcRPMByte(float engineRate)
         {
