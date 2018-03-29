@@ -5,15 +5,22 @@ namespace F1LedsConsole
 {
     class ArduinoSerial
     {
+        public static int BAUD_RATE = 115200;
+        public String Port { get; set; }
+        private SerialPort sp;
+        public bool isConnected = false;
+
         public static string[] GetAvailablePorts() { return SerialPort.GetPortNames(); }
-        public static string GetArdunioPort() {
+        public static string GetArdunioPort()
+        {
             string[] ports = SerialPort.GetPortNames();
             if (ports.Length == 0)
             {
                 throw new Exception("No COM ports");
             }
 
-            if (ports.Length == 1) {
+            if (ports.Length == 1)
+            {
                 Console.WriteLine("{0} selected", ports[0]);
                 return ports[0];
             }
@@ -37,18 +44,13 @@ namespace F1LedsConsole
             return ports[selected];
         }
 
-        public static int BAUD_RATE = 14400;
-
-        public String Port { get; set; }
-        private SerialPort sp;
-        public bool isConnected = false;
-
         public ArduinoSerial() { }
 
         public void Connect(String _port)
         {
             Port = _port;
             sp = new SerialPort(Port, BAUD_RATE);
+            sp.DataReceived += new SerialDataReceivedEventHandler(DataReceived);
             sp.Open();
             isConnected = true;
         }
@@ -64,6 +66,11 @@ namespace F1LedsConsole
         {
             if (!isConnected) return;
             sp.Write(bytes, 0, bytes.Length);
+        }
+
+        public void DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            Console.Write(sp.ReadExisting());
         }
     }
 }

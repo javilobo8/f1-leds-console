@@ -1,4 +1,12 @@
-#include <LedControlMS.h>
+#include <Adafruit_NeoPixel.h>
+#include "LedControlCustom.h"
+#include "Constants.h"
+#include "Utils.h"
+
+// Serial
+#define BAUDRATE 115200
+
+// MAX7219
 #define N_MAX 3        // Cuantas matrices vamos a usar
 #define MATRIX 0
 #define DIGIT_0 1
@@ -8,151 +16,32 @@
 #define DPIN 2
 #define CSPIN 3
 #define CLKPIN 4
-#define INTENSITY 0
+#define MAX7219_INTENSITY 8
 
-byte NUMBERS[] = {
-	B01111110, // 0
-	B00110000, // 1
-	B01101101, // 2
-	B01111001, // 3
-	B00110011, // 4
-	B01011011, // 5
-	B01011111, // 6
-	B01110000, // 7
-	B01111111, // 8 
-	B01111011, // 9
-};
-
-const byte GEARS[][8] = {
-	{
-		B01111100,
-		B01111110,
-		B01100110,
-		B01100110,
-		B01111100,
-		B01100110,
-		B01100110,
-		B01100110
-	},{
-		B01100110,
-		B01110110,
-		B01110110,
-		B01111110,
-		B01111110,
-		B01101110,
-		B01101110,
-		B01100110
-	},{
-		B00011000,
-		B00111000,
-		B00111000,
-		B00011000,
-		B00011000,
-		B00011000,
-		B00011000,
-		B00011000
-	},{
-		B00111100,
-		B01111110,
-		B00000110,
-		B00111110,
-		B01111100,
-		B01100000,
-		B01111110,
-		B01111110
-	},{
-		B01111100,
-		B01111110,
-		B00000110,
-		B01111110,
-		B01111110,
-		B00000110,
-		B01111110,
-		B01111100
-	},{
-		B01100110,
-		B01100110,
-		B01100110,
-		B01111110,
-		B01111110,
-		B00000110,
-		B00000110,
-		B00000110
-	},{
-		B01111110,
-		B01111110,
-		B01100000,
-		B01111100,
-		B01111110,
-		B00000110,
-		B01111110,
-		B01111100
-	},{
-		B00111100,
-		B01111110,
-		B01100000,
-		B01111100,
-		B01111110,
-		B01100110,
-		B01111110,
-		B00111100
-	},{
-		B01111110,
-		B00111110,
-		B00000110,
-		B00000110,
-		B00000110,
-		B00000110,
-		B00000110,
-		B00000110
-	},{
-		B00111100,
-		B01111110,
-		B01100110,
-		B01111110,
-		B01111110,
-		B01100110,
-		B01111110,
-		B00111100
-	},{
-		B01111110,
-		B01111110,
-		B01100110,
-		B01111110,
-		B00111110,
-		B00000110,
-		B00000110,
-		B00000110
-	}
-};
-
-// unsigned int = [0...32767]
-typedef struct
-{
-	uint32_t gear = 0;
-	uint32_t kmh = 0;
-	uint32_t rpm = 0;
-	uint32_t lapTime = 0;
-} SerialData;
-
-SerialData data;
-
-const size_t packet_size = 16;
-char messageBuffer[packet_size];
+// NeoPixel Stick
+#define NP_PIN 6
+#define NUM_LEDS 8
+#define NEO_INTENSITY 1
 
 LedControl lc = LedControl(DPIN, CLKPIN, CSPIN, N_MAX);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, NP_PIN, NEO_GRB + NEO_KHZ800);
 
 void setup() {
+	strip.begin();
+	strip.setBrightness(NEO_INTENSITY);
+	strip.clear();
+	strip.show();
+
 	lc.shutdown(MATRIX, false);
-	lc.setIntensity(MATRIX, 0);
+	lc.setIntensity(MATRIX, 1);
 	lc.clearDisplay(MATRIX);
 
 	lc.shutdown(DIGIT_0, false);
-	lc.setIntensity(DIGIT_0, 1);
+	lc.setIntensity(DIGIT_0, 8);
 	lc.clearDisplay(DIGIT_0);
 
 	lc.shutdown(DIGIT_1, false);
-	lc.setIntensity(DIGIT_1, 1);
+	lc.setIntensity(DIGIT_1, 8);
 	lc.clearDisplay(DIGIT_1);
 
 	for (int h = 1; h >= 0; h--) {
@@ -165,28 +54,39 @@ void setup() {
 			}
 		}
 	}
-		
-	Serial.begin(14400);
+
+	for (size_t i = 0; i < 8; i++) {
+		strip.setPixelColor(i, 255, 0, 0);
+		strip.show();
+		delay(100);
+	}
+	
+	Serial.begin(BAUDRATE);
 }
+
+typedef struct
+{
+	uint32_t gear = 0;
+	uint32_t kmh = 0;
+	uint32_t rpm = 4;
+	uint32_t lapTime = 0;
+} SerialData;
+
+SerialData data;
+
+const size_t packet_size = 16;
+char messageBuffer[packet_size];
 
 void loop() {
 	if (Serial.available() >= packet_size) {
 		Serial.readBytes(messageBuffer, packet_size);
 		memcpy(&data, &messageBuffer, packet_size);
+		display();
 	}
-	display();
 }
 
-int power(int value, int exponent) {
-	return 0.5 + pow(value, exponent);
-}
-
-int count_digits(int arg) {
-	return snprintf(NULL, 0, "%d", arg) - (arg < 0);
-}
-
-void printNumber(uint8_t disp, uint8_t offset, uint8_t max_digits, uint32_t number) {
-	uint8_t digits = count_digits(number);
+void printNumber(uint8_t disp, uint8_t offset, uint8_t max_digits, uint32_t number, byte dp) {
+	uint8_t digits = countDigits(number);
 	uint8_t arr[max_digits];
 	uint8_t arr_size = NELEMS(arr);
 
@@ -201,8 +101,8 @@ void printNumber(uint8_t disp, uint8_t offset, uint8_t max_digits, uint32_t numb
 	}
 	for (size_t j = 0; j < arr_size; j++) {
 		byte b = NUMBERS[arr[j]];
-		// if (j == 1)
-		//	 b += B10000000;
+		if (dp && dp == j)
+		  b += B10000000;
 		if (arr[j] == 0 && j + 1 > digits)
 			lc.setRow(disp, j + offset, B00000000);
 		else
@@ -216,8 +116,19 @@ void printGear(int gear) {
 	}
 }
 
+void printRPMLeds(int rpm) {
+	for (int i = 0; i < NUM_LEDS; i++) {
+		if (i < rpm)
+			strip.setPixelColor(i, LED_COLORS[i]);
+		else
+			strip.setPixelColor(i, 0);
+	}
+	strip.show();
+}
+
 void display() {
+	printRPMLeds((int)data.rpm);
 	printGear(data.gear);
-	printNumber(DIGIT_0, 0, 3, data.kmh);
-	printNumber(DIGIT_1, 0, 5, data.lapTime);
+	printNumber(DIGIT_0, 0, 3, data.kmh, 0);
+	printNumber(DIGIT_1, 0, 6, data.lapTime, 1);
 }
