@@ -11,17 +11,17 @@
 #define MATRIX 0
 #define DIGIT_0 1
 #define DIGIT_1 2
-#define NELEMS(x)  (sizeof(x) / sizeof((x)[0]))
+#define NELEMS(x) (sizeof(x) / sizeof((x)[0]))
 
 #define DPIN 2
 #define CSPIN 3
 #define CLKPIN 4
-#define MAX7219_INTENSITY 8
+#define MAX7219_INTENSITY 15
 
 // NeoPixel Stick
 #define NP_PIN 6
 #define NUM_LEDS 8
-#define NEO_INTENSITY 1
+#define NEO_INTENSITY 63
 
 LedControl lc = LedControl(DPIN, CLKPIN, CSPIN, N_MAX);
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, NP_PIN, NEO_GRB + NEO_KHZ800);
@@ -33,15 +33,15 @@ void setup() {
 	strip.show();
 
 	lc.shutdown(MATRIX, false);
-	lc.setIntensity(MATRIX, 1);
+	lc.setIntensity(MATRIX, MAX7219_INTENSITY);
 	lc.clearDisplay(MATRIX);
 
 	lc.shutdown(DIGIT_0, false);
-	lc.setIntensity(DIGIT_0, 8);
+	lc.setIntensity(DIGIT_0, MAX7219_INTENSITY);
 	lc.clearDisplay(DIGIT_0);
 
 	lc.shutdown(DIGIT_1, false);
-	lc.setIntensity(DIGIT_1, 8);
+	lc.setIntensity(DIGIT_1, MAX7219_INTENSITY);
 	lc.clearDisplay(DIGIT_1);
 
 	for (int h = 1; h >= 0; h--) {
@@ -68,13 +68,15 @@ typedef struct
 {
 	uint32_t gear = 0;
 	uint32_t kmh = 0;
-	uint32_t rpm = 4;
+	uint32_t rpm = 8;
 	uint32_t lapTime = 0;
+	uint32_t drsAllowed = 0;
+	uint32_t drs = 0;
 } SerialData;
 
 SerialData data;
 
-const size_t packet_size = 16;
+const size_t packet_size = 24;
 char messageBuffer[packet_size];
 
 void loop() {
@@ -116,19 +118,30 @@ void printGear(int gear) {
 	}
 }
 
-void printRPMLeds(int rpm) {
+void printLEDStrip(uint32_t rpm, uint32_t drsAllowed, uint32_t drs) {
 	for (int i = 0; i < NUM_LEDS; i++) {
-		if (i < rpm)
-			strip.setPixelColor(i, LED_COLORS[i]);
-		else
-			strip.setPixelColor(i, 0);
+		switch (i) {
+		case 0:
+			if (drsAllowed == 1 && drs == 0)
+				strip.setPixelColor(i, C_YELLOW);
+			else if (drs == 1)
+				strip.setPixelColor(i, C_MAGENTA);
+			else 
+				strip.setPixelColor(i, LED_COLORS[i]);
+			break;
+		default:
+			if (i < rpm)
+				strip.setPixelColor(i, LED_COLORS[i]);
+			else
+				strip.setPixelColor(i, 0);
+		}
 	}
 	strip.show();
 }
 
 void display() {
-	printRPMLeds((int)data.rpm);
+	printLEDStrip(data.rpm, data.drsAllowed, data.drs);
 	printGear(data.gear);
 	printNumber(DIGIT_0, 0, 3, data.kmh, 0);
-	printNumber(DIGIT_1, 0, 6, data.lapTime, 1);
+	//printNumber(DIGIT_1, 0, 6, data.lapTime, 1);
 }

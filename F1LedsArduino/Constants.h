@@ -1,9 +1,13 @@
 #pragma once
+#define C_BLACK 0
 #define C_RED 16711680
 #define C_GREEN 65280
 #define C_BLUE 255
+#define C_YELLOW 16776960
+#define C_MAGENTA 16711935
+#define C_DARKVIOLET 9699549
 
-uint32_t LED_COLORS[8] = { C_RED, C_RED, C_RED, C_RED, C_RED, C_BLUE, C_BLUE, C_BLUE };
+uint32_t LED_COLORS[8] = { C_BLACK, C_RED, C_RED, C_RED, C_RED, C_BLUE, C_BLUE, C_BLUE };
 
 byte NUMBERS[] = {
 	B01111110, // 0

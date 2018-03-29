@@ -13,6 +13,8 @@ namespace F1LedsConsole
         public UInt32 kmh;
         public UInt32 rpm;
         public UInt32 lapTime;
+        public UInt32 drsAllowed;
+        public UInt32 drs;
     }
 
     class StructUtils
