@@ -7,7 +7,7 @@
 #define BAUDRATE 115200
 
 // MAX7219
-#define N_MAX 3        // Cuantas matrices vamos a usar
+#define N_MAX 2
 #define MATRIX 0
 #define DIGIT_0 1
 #define DIGIT_1 2
@@ -21,7 +21,7 @@
 // NeoPixel Stick
 #define NP_PIN 6
 #define NUM_LEDS 8
-#define NEO_INTENSITY 63
+#define NEO_INTENSITY 31
 
 LedControl lc = LedControl(DPIN, CLKPIN, CSPIN, N_MAX);
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, NP_PIN, NEO_GRB + NEO_KHZ800);
@@ -40,9 +40,9 @@ void setup() {
 	lc.setIntensity(DIGIT_0, MAX7219_INTENSITY);
 	lc.clearDisplay(DIGIT_0);
 
-	lc.shutdown(DIGIT_1, false);
-	lc.setIntensity(DIGIT_1, MAX7219_INTENSITY);
-	lc.clearDisplay(DIGIT_1);
+	//lc.shutdown(DIGIT_1, false);
+	//lc.setIntensity(DIGIT_1, MAX7219_INTENSITY);
+	//lc.clearDisplay(DIGIT_1);
 
 	for (int h = 1; h >= 0; h--) {
 		for (size_t i = 0; i < N_MAX; i++) {
@@ -122,13 +122,14 @@ void printLEDStrip(uint32_t rpm, uint32_t drsAllowed, uint32_t drs) {
 	for (int i = 0; i < NUM_LEDS; i++) {
 		switch (i) {
 		case 0:
-			if (drsAllowed == 1 && drs == 0)
+			if (drsAllowed == 1 && drs == 0) {
 				strip.setPixelColor(i, C_YELLOW);
-			else if (drs == 1)
+				break;
+			}
+			else if (drs == 1) {
 				strip.setPixelColor(i, C_MAGENTA);
-			else 
-				strip.setPixelColor(i, LED_COLORS[i]);
-			break;
+				break;
+			}
 		default:
 			if (i < rpm)
 				strip.setPixelColor(i, LED_COLORS[i]);
