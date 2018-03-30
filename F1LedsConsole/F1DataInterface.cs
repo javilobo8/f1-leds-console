@@ -7,30 +7,30 @@ namespace F1LedsConsole
         private ArduinoSerial serial;
         private double now;
 
-        public F1DataInterface(ArduinoSerial _serial)
+        private SerialData serialData = new SerialData
         {
-            this.serial = _serial;
-        }
+            gear = 0,
+            kmh = 0,
+            rpm = 0,
+            lapTime = 0,
+            drsAllowed = 0,
+            drs = 0,
+        };
+
+        public F1DataInterface(ArduinoSerial _serial) { this.serial = _serial; }
 
         public void Send(F1DataStruct.F1Data data)
         {
             now = (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds;
 
-            UInt32 gear = (UInt32)data.gear;
-            UInt32 kmh = (UInt32)(data.speed * 3.6f);
-            UInt32 rpm = (UInt32)CalcRPMByte(data.engineRate);
-            UInt32 lapTime = (UInt32)(data.lapTime * 10f);
-            UInt32 drsAllowed = (UInt32)data.drsAllowed;
-            UInt32 drs = (UInt32)data.drs;
+            serialData.gear = (UInt32)data.gear;
+            serialData.kmh = (UInt32)(data.speed * 3.6f);
+            serialData.rpm = CalcRPMByte(data.engineRate);
+            serialData.lapTime = (UInt32)(data.lapTime * 1000f);
+            serialData.drsAllowed = (UInt32)data.drsAllowed;
+            serialData.drs = (UInt32)data.drs;
 
-            serial.Write(StructUtils.ToByteArray(new SerialData{
-                gear = gear,
-                kmh = kmh,
-                rpm = rpm,
-                lapTime = lapTime,
-                drsAllowed = drsAllowed,
-                drs = drs,
-            }));
+            serial.Write(StructUtils.ToByteArray(serialData));
         }
 
         // RPM Constants
@@ -42,7 +42,7 @@ namespace F1LedsConsole
         private double last_date = 0;
         private int maxrpmstate = 0;
 
-        public int CalcRPMByte(float engineRate)
+        public UInt32 CalcRPMByte(float engineRate)
         {
             float percent = ((float)engineRate - RPM_MIN) * 100f / (RPM_MAX - RPM_MIN);
             int leds = (int)Math.Ceiling(NUM_LEDS * percent / 100f);
@@ -58,7 +58,7 @@ namespace F1LedsConsole
                 }
                 leds = maxrpmstate;
             }
-            return leds;
+            return (UInt32)leds;
         }
     }
 }
