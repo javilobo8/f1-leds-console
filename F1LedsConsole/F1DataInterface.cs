@@ -34,9 +34,10 @@ namespace F1LedsConsole
         }
 
         // RPM Constants
-        private static float RPM_MIN = 11030f;
+        private static float RPM_MIN = 11030f; // 11030f | 4300f
         private static float RPM_MAX = 11630f;
-        private static int N_LEDS = 8;
+        private static int NUM_LEDS_MULTP = 8;
+        private static int NUM_LEDS = 8 * NUM_LEDS_MULTP;
         private static int ms_blink = 50;
         private double last_date = 0;
         private int maxrpmstate = 0;
@@ -44,15 +45,15 @@ namespace F1LedsConsole
         public int CalcRPMByte(float engineRate)
         {
             float percent = ((float)engineRate - RPM_MIN) * 100f / (RPM_MAX - RPM_MIN);
-            int leds = (int)Math.Ceiling(N_LEDS * percent / 100f);
+            int leds = (int)Math.Ceiling(NUM_LEDS * percent / 100f);
 
             if (leds <= 0)
                 leds = 0;
-            else if (leds > N_LEDS)
+            else if (leds > NUM_LEDS)
             {
                 if (now - last_date > ms_blink)
                 {
-                    maxrpmstate = maxrpmstate == 0 ? N_LEDS : 0;
+                    maxrpmstate = maxrpmstate == 0 ? NUM_LEDS : 0;
                     last_date = now;
                 }
                 leds = maxrpmstate;
