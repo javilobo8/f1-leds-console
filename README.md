@@ -13,10 +13,10 @@
 
 # To do
 
-* Add more NeoPixel Sticks
+* Add more NeoPixel Sticks [DONE]
 * Attach external power supply for full brightness leds
-* Display currente race flag
-* Display currente lap time
+* Display current race flag
+* Display current lap time [DONE]
 * Display sector delta
 * Display lap delta
 * Display position / lap
