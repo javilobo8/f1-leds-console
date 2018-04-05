@@ -36,8 +36,8 @@ namespace F1LedsConsole
         // RPM Constants
         private static float RPM_MIN = 11030f; // 11030f | 4300f
         private static float RPM_MAX = 11630f;
-        private static int NUM_LEDS_MULTP = 8;
-        private static int NUM_LEDS = 8 * NUM_LEDS_MULTP;
+        private static int NUM_LEDS_MULTP = 64;
+        private static int NUM_LEDS = 16 * NUM_LEDS_MULTP;
         private static int ms_blink = 50;
         private double last_date = 0;
         private int maxrpmstate = 0;

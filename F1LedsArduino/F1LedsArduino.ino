@@ -28,9 +28,9 @@
 
 // NeoPixel Stick
 #define NP_PIN 6
-#define NUM_LEDS 8
-#define NUM_LEDS_MULTP 8
-#define NEO_MAX_BRIGHTNESS 255
+#define NUM_LEDS 16
+#define NUM_LEDS_MULTP 64
+#define NEO_MAX_BRIGHTNESS 32
 
 LedControl led_matrix = LedControl(MATRIX_DPIN, MATRIX_CLKPIN, MATRIX_CSPIN, 1);
 LedControl led_digit = LedControl(DIGIT_DPIN, DIGIT_CLKPIN, DIGIT_CSPIN, 2);
@@ -89,7 +89,7 @@ void setup() {
 	for (uint32_t i = NUM_LEDS; i < NUM_LEDS * NUM_LEDS_MULTP + 1; i++) {
 		data.rpm = i;
 		display();
-		delay(10);
+		delay(1);
 	}
 	data.rpm = 0;
 	display();
@@ -144,11 +144,13 @@ void printLEDStrip() {
 	for (int current_led = 0; current_led < NUM_LEDS; current_led++) {
 		switch (current_led) {
 		case 0:
-			if (data.drsAllowed == 1 && data.drs == 0) {
-				strip.setPixelColor(current_led, C_YELLOW);
+			if (data.drsAllowed == 1) {
+				strip.setPixelColor(current_led, C_GREEN);
 				break;
-			} else if (data.drs == 1) {
-				strip.setPixelColor(current_led, C_MAGENTA);
+			}
+		case 1:
+			if (data.drs == 1) {
+				strip.setPixelColor(current_led, C_GREEN);
 				break;
 			}
 		default:
