@@ -80,6 +80,9 @@
     <None Include="F1LedsArduino.ino">
       <FileType>CppCode</FileType>
     </None>
+    <None Include="F1LedsArduino_old.ino">
+      <FileType>CppCode</FileType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Constants.h" />

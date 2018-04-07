@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="F1LedsArduino.ino" />
+    <None Include="F1LedsArduino_old.ino" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.F1LedsArduino.vsarduino.h">

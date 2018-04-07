@@ -78,5 +78,6 @@ typedef unsigned char uint8_t;
 #define pgm_read_ptr(address_short)   short()
 
 #include "F1LedsArduino.ino"
+#include "F1LedsArduino_old.ino"
 #endif
 #endif
