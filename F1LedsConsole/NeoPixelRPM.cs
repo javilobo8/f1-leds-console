@@ -14,8 +14,8 @@ namespace F1LedsConsole
         public static UInt32 C_BLACK = 0;
 
         public static UInt32[] F1_LED_LAYOUT = {
-            C_RED, C_RED, C_RED, C_RED, C_RED, C_RED, C_RED, C_RED,
-            C_RED, C_RED, C_BLUE, C_BLUE, C_BLUE, C_BLUE, C_BLUE, C_BLUE
+            C_BLACK, C_GREEN, C_GREEN, C_GREEN, C_GREEN, C_GREEN, C_RED, C_RED,
+            C_RED, C_RED, C_RED, C_BLUE, C_BLUE, C_BLUE, C_BLUE, C_BLUE
         };
 
         public int led_count;
@@ -48,6 +48,20 @@ namespace F1LedsConsole
                     LED_BUFFER[current_led] = C_BLACK;
             }
             return LED_BUFFER;
+        }
+
+        public UInt32 changeBrightness(UInt32 c, int brightness)
+        {
+            UInt32 r = (byte)(c >> 16);
+            UInt32 g = (byte)(c >> 8);
+            UInt32 b = (byte)c;
+            r = (UInt32)(r * brightness) >> 8;
+            g = (UInt32)(g * brightness) >> 8;
+            b = (UInt32)(b * brightness) >> 8;
+            UInt32 rgb = r;
+            rgb = (rgb << 8) + g;
+            rgb = (rgb << 8) + b;
+            return rgb;
         }
     }
 }

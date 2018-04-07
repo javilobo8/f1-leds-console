@@ -35,12 +35,10 @@ void setup() {
 }
 
 void loop() {
-	while (true) {
-		if (Serial.available() >= packet_size) {
-			Serial.readBytes(messageBuffer, packet_size);
-			memcpy(&color_data, &messageBuffer, packet_size);
-			display();
-		}
+	if (Serial.available() >= packet_size) {
+		Serial.readBytes(messageBuffer, packet_size);
+		memcpy(&color_data, &messageBuffer, packet_size);
+		display();
 	}
 }
 
