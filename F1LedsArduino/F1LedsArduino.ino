@@ -12,17 +12,15 @@
 #define NUM_LEDS 16
 #define NEO_MAX_BRIGHTNESS 32
 
-uint32_t LEDS[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, NP_PIN, NEO_GRB + NEO_KHZ800);
 
 typedef struct
 {
-	byte led;
-	uint32_t led_color;
+	uint32_t led_color[16];
 } ColorData;
+
 ColorData color_data;
-const size_t packet_size = 8; //sizeof(ColorData);
+const size_t packet_size = 64;
 char messageBuffer[packet_size];
 
 void setup() {
@@ -34,25 +32,16 @@ void setup() {
 	display();
 
 	Serial.begin(BAUDRATE);
-	Serial.print("ColorData size: ");
-	Serial.println(packet_size);
 }
 
 void loop() {
-	if (Serial.available() >= packet_size) {
-		Serial.readBytes(messageBuffer, packet_size);
-		memcpy(&color_data, &messageBuffer, packet_size);
-		//Serial.print("color_data.led ");
-		//Serial.println(color_data.led);
-		//Serial.print("color_data.led_color ");
-		//Serial.println(color_data.led_color);
-		update();
-		display();
+	while (true) {
+		if (Serial.available() >= packet_size) {
+			Serial.readBytes(messageBuffer, packet_size);
+			memcpy(&color_data, &messageBuffer, packet_size);
+			display();
+		}
 	}
-}
-
-void update() {
-	LEDS[color_data.led] = color_data.led_color;
 }
 
 void display() {
@@ -61,7 +50,7 @@ void display() {
 
 void printLEDStrip() {
 	for (size_t i = 0; i < 16; i++) {
-		strip.setPixelColor(i, LEDS[i]);
+		strip.setPixelColor(i, color_data.led_color[i]);
 	}
 	strip.show();
 }

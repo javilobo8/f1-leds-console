@@ -22,16 +22,22 @@ namespace F1LedsConsole
         public UInt32[] neopixel;
     }
 
+    [StructLayout(LayoutKind.Explicit)]
+    public struct ArduinoSerialStructure
+    {
+        [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.U4, SizeConst = 16), FieldOffset(0)]
+        public UInt32[] led_color;
+    }
+
     class StructUtils
     {
-        public static byte[] ToByteArray(object obj)
+        public static byte[] structToBytes<T>(T str) where T : struct
         {
-            int len = Marshal.SizeOf(obj);
-            // Console.WriteLine("Struct length: {0}", len);
-            byte[] arr = new byte[len];
-            IntPtr ptr = Marshal.AllocHGlobal(len);
-            Marshal.StructureToPtr(obj, ptr, false);
-            Marshal.Copy(ptr, arr, 0, len);
+            int size = Marshal.SizeOf<T>();
+            byte[] arr = new byte[size];
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+            Marshal.StructureToPtr<T>(str, ptr, true);
+            Marshal.Copy(ptr, arr, 0, size);
             Marshal.FreeHGlobal(ptr);
             return arr;
         }

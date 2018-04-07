@@ -1,7 +1,5 @@
 ﻿using System;
 using System.IO.Ports;
-using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace F1LedsConsole
 {
@@ -48,13 +46,6 @@ namespace F1LedsConsole
 
         public ArduinoSerial() { }
 
-        [StructLayout(LayoutKind.Explicit)]
-        public struct ColorData
-        {
-            [FieldOffset(0)] public byte led;
-            [FieldOffset(1)] public UInt32 led_color;
-        }
-
         public void Connect(String _port)
         {
             Port = _port;
@@ -62,75 +53,15 @@ namespace F1LedsConsole
             sp.DataReceived += new SerialDataReceivedEventHandler(DataReceived);
             sp.Open();
             isConnected = true;
+        }
 
-
-            ColorData cd = new ColorData { led = 0, led_color = NeoPixelRPM.C_BLUE};
-
-            int sleep = 100;
-            while(true)
+        public void printBytes(byte[] bytes)
+        {
+            //Console.WriteLine("NEW BYTE");
+            for (int i = 0; i < bytes.Length; i++)
             {
-                for (int i = 0; i < 16; i++)
-                {
-                    Write(StructUtils.ToByteArray(new ColorData { led = (byte)i, led_color = NeoPixelRPM.C_GREEN }));
-                    Thread.Sleep(sleep);
-                }
-
-                for (int i = 0; i < 16; i++)
-                {
-                    Write(StructUtils.ToByteArray(new ColorData
-                    {
-                        led = (byte)i,
-                        led_color = NeoPixelRPM.C_RED
-                    }));
-                    Thread.Sleep(sleep);
-                }
-
-                for (int i = 0; i < 16; i++)
-                {
-                    Write(StructUtils.ToByteArray(new ColorData
-                    {
-                        led = (byte)i,
-                        led_color = NeoPixelRPM.C_BLUE
-                    }));
-                    Thread.Sleep(sleep);
-                }
+                Console.WriteLine("{0} => {1}", i, Convert.ToString(bytes[i], 2).PadLeft(8, '0'));
             }
-
-
-            //sp.WriteLine("HL1,0,255,0");
-            //sp.WriteLine("HL2,0,0,255");
-            //Write(StructUtils.ToByteArray(cd));
-            //cd.pos++;
-            //Thread.Sleep(1000);
-
-            //sp.WriteLine("L");
-            //Write(StructUtils.ToByteArray(cd));
-            //cd.pos++;
-            //Thread.Sleep(1000);
-
-            //sp.WriteLine("L");
-            //Write(StructUtils.ToByteArray(cd));
-            //cd.pos++;
-            //Thread.Sleep(1000);
-
-            //sp.WriteLine("L");
-            //Write(StructUtils.ToByteArray(cd));
-            //cd.pos++;
-            //Thread.Sleep(1000);
-
-            //Thread.Sleep(1000);
-            //sp.Write("L");
-            //sp.Write("1");
-            //sp.Write("0");
-            //sp.Write("255");
-            //sp.Write("0");
-            //Thread.Sleep(1000);
-            //sp.Write("L");
-            //sp.Write("2");
-            //sp.Write("0");
-            //sp.Write("0");
-            //sp.Write("255");
-
         }
 
         public void Disconnect()
@@ -144,11 +75,12 @@ namespace F1LedsConsole
         {
             if (!isConnected) return;
             sp.Write(bytes, 0, bytes.Length);
+            //Console.WriteLine("Sent {0} bytes", bytes.Length);
         }
 
         public void DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            Console.Write(sp.ReadExisting());
+            //Console.Write(sp.ReadExisting());
         }
     }
 }

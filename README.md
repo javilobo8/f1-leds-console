@@ -23,3 +23,15 @@
 * Add variable resistor for brightness control
 * Change/delete/improove LedControlCustom library
 * ...
+
+# Install
+You must modify HardwareSerial.h for reading more than 64 bytes from serial.
+
+Change
+```
+#define SERIAL_RX_BUFFER_SIZE 64
+```
+to
+```
+#define SERIAL_RX_BUFFER_SIZE 256
+```

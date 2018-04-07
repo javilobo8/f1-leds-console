@@ -47,7 +47,6 @@ namespace F1LedsConsole
                 else
                     LED_BUFFER[current_led] = C_BLACK;
             }
-            Console.WriteLine("sharp {0}", LED_BUFFER[0]);
             return LED_BUFFER;
         }
     }

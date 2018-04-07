@@ -5,22 +5,11 @@ namespace F1LedsConsole
     class F1DataInterface
     {
         private ArduinoSerial serial;
-        private double now;
         private NeoPixelRPM neoPixelRpm;
 
-        private LEDData led_data = new LEDData
+        private ArduinoSerialStructure arduino_data = new ArduinoSerialStructure
         {
-            neopixel = new UInt32[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        };
-
-        private SerialData serialData = new SerialData
-        {
-            gear = 0,
-            kmh = 0,
-            rpm = 0,
-            lapTime = 0,
-            drsAllowed = 0,
-            drs = 0,
+            led_color = new UInt32[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
         };
 
         public F1DataInterface(ArduinoSerial _serial)
@@ -31,17 +20,9 @@ namespace F1LedsConsole
 
         public void Send(F1DataStruct.F1Data data)
         {
-            //now = (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds;
+            arduino_data.led_color = neoPixelRpm.CalcRGBLeds(data.engineRate);
 
-            //serialData.gear = (UInt32)data.gear;
-            //serialData.kmh = (UInt32)(data.speed * 3.6f);
-            //serialData.rpm = CalcRPMByte(data.engineRate);
-            //serialData.lapTime = (UInt32)(data.lapTime * 1000f);
-            //serialData.drsAllowed = (UInt32)data.drsAllowed;
-            //serialData.drs = (UInt32)data.drs;
-            // led_data.neopixel = neoPixelRpm.CalcRGBLeds(data.engineRate);
-            
-            // serial.Write(StructUtils.ToByteArray(led_data));
+            serial.Write(StructUtils.structToBytes(arduino_data));
         }
 
         //// RPM Constants
